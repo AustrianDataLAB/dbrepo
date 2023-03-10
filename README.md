@@ -10,6 +10,14 @@ Coursework startup
 * [Value Proposition](https://colab.tuwien.ac.at/display/ADLS/DBRepo+-+Database+Repository)
 * [Wiki](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/wikis/home)
 
+## Git Branching
+
+We move all branches two levels lower for this coursework:
+
+* `master` -> `kubernetes-integration`
+* `dev` -> `kubernetes-integration-dev`
+* `feature-xyz` -> `kubernetes-integration-feature-xyz`
+
 ## Required Cloud Resources
 
 * Kubernetes Cluster
