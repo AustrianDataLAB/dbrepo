@@ -1,4 +1,4 @@
-[![license](.gitlab/license.svg)](https://opensource.org/licenses/Apache-2.0)
+[![license](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/.gitlab/license.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # Hands on Cloud Native
 
