@@ -1,3 +1,5 @@
+[![license](.gitlab/license.svg)](https://opensource.org/licenses/Apache-2.0)
+
 # Hands on Cloud Native
 
 Coursework startup
@@ -7,6 +9,11 @@ Coursework startup
 * [Code Repository](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
 * [Value Proposition](https://colab.tuwien.ac.at/display/ADLS/DBRepo+-+Database+Repository)
 * [Wiki](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/wikis/home)
+
+## Required Cloud Resources
+
+* Kubernetes Cluster
+* Managed *high-availability* databases -or- shareded databases
 
 ## Contributors
 
