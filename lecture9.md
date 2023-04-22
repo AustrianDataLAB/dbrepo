@@ -35,7 +35,7 @@ status:
 ## **Ad Point 4:** explain the difference between a pv and a pvc
 A PV (Persistent Volume) represent a piece of storage in Kubernetes. A PV has an own lifecycle and can be used by multiple Pods for data storage until its deleted. Therefore deleting a Pod will not delete the PV its using. To access and use a PV for storage, the Pod will need a PVC (Persistent Volume Claim) which is more or less a request for storage that can be then be used by specific pod. By deploying a PVC, Kubernetes searches for a PV maching the PVC requirements and provides the Pod using that Claim with this storage. 
 
-## **Ad Point 5:** inspect mongodb contents without using any ingress to the mongo-pod:** write down how you achieved that
+## **Ad Point 5:** inspect mongodb contents without using any ingress to the mongo-pod: write down how you achieved that
 Access to the Mongo database can be obtained through the pod's shell using either kubectl or rancher-ui. Using kubectl, this can be done using the `exec` method: `kubectl exec -it mongo-6fdcf86d66-bm577 -- bash`.
 
 The credentials such as database name, user, and password used in the mongo deployment are read from the `mongodb-users-secret` secret store. Therefore, this information can be obtained directly from the `secret.yaml` deployment file. However, the secrets are stored in base64 encoded format and must be decoded:
@@ -57,7 +57,7 @@ pacman  0.000GB
 ```
 
 ## **Ad Point 6:** try to alter the secret, explain what happened
-Nach dem Ändern der secrets in `mongodb-users-secret` passiert nichts, da diese nur einmal bei dem deployen der mongo pods ausgelesen und in die enviornment varibalen gespeichert werden.
+After changing the secrets in `mongodb-users-secret`, nothing happens because the secrets are only read and stored in the environment variables once during the initial deployment of the MongoDB pods. To make use of the new secrets, the MongoDB deployment needs to be redeployed so that the new secrets are picked up and used.
 
 ## **Ad Point 7:** modify the replication factor while altering the deployment strategy , what happens ? (did this make sense?, discuss)
 TODO
