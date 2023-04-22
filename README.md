@@ -25,9 +25,7 @@ We move all branches two levels lower for this coursework:
 
 ## Contributors
 
-(names in alphabetic order)
-
-- Grantner Tobias (Chief Transformation Officer)
-- Mahler Lukas (Chief Data Officer)
-- Taha Josef (Chief Virtualization Officer)
-- Weise Martin (Chief Executive Officer)
+- Martin Weise (CEO)
+- Tobias Grantner (COO)
+- Lukas Mahler (CIO)
+- Josef Taha (CTO)
