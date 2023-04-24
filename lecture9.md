@@ -1,10 +1,15 @@
 # Lecture 9: Group Findings and Discussion
 This files include the content of the group findings and discussions for lecture 9.
 ## **Ad Point 1:** implemented adding at least one environment value and prove it is being read by the application
-TODO
+We changed the `MY_MONGO_PORT` value in the pacman deployment from `27017` to `444`. This change caused the pacman application to fail since it cannot connect to the database. This causes the readiness and liveness probe to fail, since it will not get any response from GET /. Therefore the pod will try to restart. We showed that the variable is truely being read by the application.
 
 ## **Ad Point 2:** discuss for what env should be used (think about the 12-factor)
-TODO
+Env variables are used for storing and accessing configuration information and settings for the application. They can be used to configure applications, set system-wide settings, store authentication and security-related information. Examples for env varibales could be:
+- Debugging Level
+- (Database) credentials
+- Application Type (prod vs. dev)
+- globally used URLs/ Ports
+- Application specific configuration (MONGODB_DISABLE_JAVASCRIPT)
 
 ## **Ad Point 3:** delete or modify mongo's pvc and explain what happens (check the pv)
 Deleting the mongo PVC puts the PVC in the "Terminating" state and it cannot be fully terminated as long as the mongo pod is running. This is because the mongo pod still uses this PVC while it is running. Once the mongo pod deployment is deleted, the PVC finishes terminating and is successfully deleted. Deleting the PVC also deletes the corresponding PV that was dynamically created during the creation of the PVC. No PV was specified for the PVC in the deployment. Thus, by default, the storage class `csi-cinder-sc-delete` creates a PV, in our case `pvc-988d79f7-5bd7-483a-86b2-96237c607e62`, bound to this claim (and therefore it also got deleted with the claim). Below is the PVC `config.yaml` after creation, which shows the storage class used and the PV created for this claim.
@@ -60,7 +65,7 @@ pacman  0.000GB
 After changing the secrets in `mongodb-users-secret`, nothing happens because the secrets are only read and stored in the environment variables once during the initial deployment of the MongoDB pods. To make use of the new secrets, the MongoDB deployment needs to be redeployed so that the new secrets are picked up and used.
 
 ## **Ad Point 7:** modify the replication factor while altering the deployment strategy , what happens ? (did this make sense?, discuss)
-TODO
+After increasing the mongo replica from 1 to 3 while altering the deployment stragtegy from rolling update to recreate, the 2 of the 3 replicas failed to be created. They got stuck "containercreation" with the message "Containers with unready status: [mongo]"
 
 ## **Ad Point 8:** redeploy the application after some minor change, alter the deployment strategy , decide which deployment strategy is best for mongodb vs which is best for pacman ? Why did you make this choice?
 For pacman the canary deployment strategy would be a good choice as it would give you the possibility to deploy a newer pacman version for a subset of users, while the rest are still able to access the older version of pacman. This way you the team can fix issues in the newer version before rolled out to user. In the meantime all user are able to enjoy the game without any downtime or issues. 
