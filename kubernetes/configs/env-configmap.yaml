@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    service: dbrepo-search-service-env
+  name: env
+  namespace: dbrepo
+data:
+  BROKER_CONSUMERS: "2"
+  BROKER_PASSWORD: fda
+  BROKER_USERNAME: fda
+  DEFAULT_ROLES: ROLE_RESEARCHER
+  ELASTIC_PASSWORD: elastic
+  JWT_EXPIRATION: "86400000"
+  JWT_ISSUER: dbrepo
+  JWT_SECRET: secret
+  LOG_LEVEL: trace
+  MAIL_FROM: Database Repository <noreply@example.com>
+  MAIL_REPLY_TO: Admin <somebody@example.com>
+  MAIL_VERIFY: "false"
+  METADATA_DB: fda
+  METADATA_PASSWORD: dbrepo
+  METADATA_USERNAME: root
+  SHARED_FILESYSTEM: /tmp
+  SMTP_HOST: ""
+  SMTP_PASSWORD: ""
+  SMTP_PORT: ""
+  SMTP_USERNAME: ""
+  SUPERUSERS: user1,user2
+  TOKEN_MAX: "5"
+  WEBSITE: http://example.com
