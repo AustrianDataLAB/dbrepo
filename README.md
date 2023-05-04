@@ -21,6 +21,8 @@ We move all branches two levels lower for this coursework:
 ## Required Cloud Resources
 
 * Kubernetes Cluster
+  - Dev: https://rancher.caas-0012.dev.austrianopencloudcommunity.org/
+  - Beta: https://rancher.caas-0012.beta.austrianopencloudcommunity.org/
 * Managed *high-availability* databases -or- shareded databases
 
 ## Contributors
