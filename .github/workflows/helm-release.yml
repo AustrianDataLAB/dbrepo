@@ -4,6 +4,11 @@ on:
       - main
       - dev
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy to'
+        required: true
+        default: 'main'
 
 env:
   HELM_EXPERIMENTAL_OCI: 1 #enable OCI support
