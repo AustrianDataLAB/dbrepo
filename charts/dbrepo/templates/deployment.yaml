@@ -31,8 +31,8 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
           command: ["/bin/ls"]
           #args: ["/app/docker-entrypoint.sh"]
           ports:

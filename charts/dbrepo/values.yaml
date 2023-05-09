@@ -4,11 +4,12 @@
 
 replicaCount: 1
 
-image:
-  repository: ghcr.io/martinweise/ui
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.1.0"
+ui:
+  image:
+    repository: ghcr.io/mah-luke/ui
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "0.1.0"
 
 imagePullSecrets: []
 nameOverride: ""
