@@ -1,3 +1,5 @@
+name: Helm-Package
+
 on:
   push:
     branches:
