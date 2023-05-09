@@ -49,7 +49,7 @@ jobs:
       - name: save helm chart to local registry
         # if: steps.changed-files-specific.outputs.any_modified == 'true'
         run: |
-          helm chart save ${{ github.workspace }}/charts/dbrepo-helm ${{ env.GCR_IMAGE }}:${{ github.sha }}
+          helm chart save ${{ github.workspace }}/charts/dbrepo ${{ env.GCR_IMAGE }}:${{ github.sha }}
       - name: publish chart to gcr
         # if: steps.changed-files-specific.outputs.any_modified == 'true'
         run: |
