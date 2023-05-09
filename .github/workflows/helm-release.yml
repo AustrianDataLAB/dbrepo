@@ -3,6 +3,7 @@ on:
     branches:
       - main
       - dev
+  workflow_dispatch:
 
 env:
   HELM_EXPERIMENTAL_OCI: 1 #enable OCI support
