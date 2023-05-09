@@ -36,21 +36,21 @@ jobs:
             kubernetes/*
       
       - name: install helm
-        if: steps.changed-files-specific.outputs.any_modified == 'true'
+        # if: steps.changed-files-specific.outputs.any_modified == 'true'
         uses: Azure/setup-helm@v1
         with:
           # Version of helm
           version: ${{ env.HELM_VERSION_TO_INSTALL }} # default is latest # need to pin this if it works
 
       - name: login to acr using helm
-        if: steps.changed-files-specific.outputs.any_modified == 'true'
+        # if: steps.changed-files-specific.outputs.any_modified == 'true'
         run: |
           echo ${{ secrets.TOKEN_GITHUB }} | helm registry login ${{ env.GCR_IMAGE }} --username ${{ github.repository_owner }} --password-stdin
       - name: save helm chart to local registry
-        if: steps.changed-files-specific.outputs.any_modified == 'true'
+        # if: steps.changed-files-specific.outputs.any_modified == 'true'
         run: |
           helm chart save ${{ github.workspace }}/charts/dbrepo-helm ${{ env.GCR_IMAGE }}:${{ github.sha }}
       - name: publish chart to gcr
-        if: steps.changed-files-specific.outputs.any_modified == 'true'
+        # if: steps.changed-files-specific.outputs.any_modified == 'true'
         run: |
           helm chart push ${{ env.GCR_IMAGE }}:${{ github.sha }}
