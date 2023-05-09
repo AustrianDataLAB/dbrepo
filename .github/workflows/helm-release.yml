@@ -3,6 +3,7 @@ on:
     branches:
       - main
       - dev
+      - push_github
   workflow_dispatch:
     inputs:
       branch:
