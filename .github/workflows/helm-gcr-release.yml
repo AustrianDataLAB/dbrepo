@@ -3,6 +3,7 @@ on:
     branches:
       - main
       - dev
+      - helm/ui-test
   workflow_dispatch:
     inputs:
       branch:

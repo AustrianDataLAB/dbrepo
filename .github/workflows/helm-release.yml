@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - helm/ui-test
 ## REF: https://faun.pub/semantic-version-of-helm-charts-in-github-actions-using-conventional-commits-ce5e0a587ce8
 jobs:
   release:
