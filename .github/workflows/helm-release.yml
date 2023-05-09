@@ -32,6 +32,7 @@ jobs:
         uses: 'phips28/gh-action-bump-version@master'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGEJSON_DIR: 'kubernetes'
         with:
           skip-tag:  'true'
           commit-message: 'CI: Bump Helm chart version to {{version}}'
@@ -53,6 +54,6 @@ jobs:
         # if: steps.changed-files-specific.outputs.any_modified == 'true'
         uses: helm/chart-releaser-action@v1.4.0
         with:
-          charts_dir: charts
+          charts_dir: kubernetes
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
