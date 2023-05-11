@@ -10,6 +10,7 @@ ui:
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: "kubernetes"
+  api: "https://dbrepo2.ec.tuwien.ac.at"
 
 imagePullSecrets: []
 nameOverride: ""
