@@ -6,10 +6,12 @@ replicaCount: 1
 
 ui:
   image:
-    repository: ghcr.io/mah-luke/ui
-    pullPolicy: IfNotPresent
+    # repository: ghcr.io/mah-luke/ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "kubernetes"
+    # tag: "kubernetes"
+    repository: dbrepo/ui
+    tag: "latest"
+    pullPolicy: IfNotPresent
   api: "https://dbrepo2.ec.tuwien.ac.at"
 
 imagePullSecrets: []
