@@ -29,4 +29,4 @@ install:
 install_release:
 	helm repo add ${APP_NAME} ${HELM_REPO_release}
 	helm repo update
-	helm upgrade --install ${APP_NAME} -n ${APP_NS} ${APP_NAME}/${APP_NAME} --create-namespace --cleanup-on-fail
+	helm upgrade --install ${APP_NAME} -n ${APP_NS} ${APP_NS}/${APP_NAME} --create-namespace --cleanup-on-fail
