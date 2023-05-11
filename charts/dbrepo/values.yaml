@@ -61,7 +61,7 @@ ingress:
               service:
                 name: dbrepo
                 port:
-                  number: 8080
+                  number: 3000
             path: /
             pathType: Prefix
   tls:
