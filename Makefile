@@ -1,6 +1,9 @@
-HELM_REPO=oci://ghcr.io/martinweise/ui
-APP_NAME=ui
+HELM_REPO=ghcr.io/austriandatalab/dbrepo # oci://
+HELM_REPO_release=https://austriandatalab.github.io/dbrepo
+APP_NAME=dbrepo
 APP_NS=dbrepo
+GITHUB_USERNAME=
+
 
 .PHONY: all
 
@@ -10,13 +13,20 @@ clean:
 	kubectl delete --all deployment --namespace=dbrepo
 
 init:
-	kubectl create namespace dbrepo
+	kubectl create namespace ${APP_NS}
 
 build:
-	helm package ./kubernetes
+	helm package ./charts/dbrepo --destination ./build
 
 deploy: build
-	helm push ./ui-0.1.0.tgz oci://ghcr.io/martinweise
+	# Make sure GITHUB_TOKEN is in environment and is allowed to push packages to HELM_REPO
+	@echo ${GITHUB_TOKEN} | helm registry login ${HELM_REPO} --username ${GH_USERNAME} --password-stdin
+	helm push ./build/dbrepo-*.tgz oci://${HELM_REPO}/dbrepo-helm
 
 install:
-	helm upgrade --install ${APP_NAME} -n ${APP_NS} ${HELM_REPO} --create-namespace --cleanup-on-fail
+	helm upgrade --install ${APP_NAME} -n ${APP_NS} oci://${HELM_REPO}/dbrepo --create-namespace --cleanup-on-fail
+
+install_release:
+	helm repo add ${APP_NAME} ${HELM_REPO_release}
+	helm repo update
+	helm upgrade --install ${APP_NAME} -n ${APP_NS} ${APP_NAME}/${APP_NAME} --create-namespace --cleanup-on-fail
