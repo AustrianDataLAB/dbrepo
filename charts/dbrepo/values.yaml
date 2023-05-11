@@ -13,6 +13,7 @@ ui:
     tag: "latest"
     pullPolicy: IfNotPresent
   api: "https://dbrepo2.ec.tuwien.ac.at"
+  gateway: "https://dbrepo2.ec.tuwien.ac.at"
 
 imagePullSecrets: []
 nameOverride: ""
