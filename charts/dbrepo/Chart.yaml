@@ -1,6 +1,6 @@
 apiVersion: v2
 name: dbrepo
-description: A Helm chart for DBRepo
+description: Helm chart for DBRepo
 
 # A chart can be either an 'application' or a 'library' chart.
 #
