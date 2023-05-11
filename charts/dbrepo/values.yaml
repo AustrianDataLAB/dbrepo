@@ -9,7 +9,7 @@ ui:
     repository: ghcr.io/mah-luke/ui
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "0.1.0"
+    tag: "kubernetes"
 
 imagePullSecrets: []
 nameOverride: ""
