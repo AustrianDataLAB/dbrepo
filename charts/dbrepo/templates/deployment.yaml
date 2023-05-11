@@ -38,6 +38,8 @@ spec:
               value: {{ .Values.ui.api }}
             - name: GATEWAY_ENDPOINT
               value: {{ .Values.ui.gateway }}
+            - name: NODE_ENV # TODO: Remove this once we have a production build
+              value: "development"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
