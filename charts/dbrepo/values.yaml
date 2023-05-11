@@ -12,7 +12,7 @@ ui:
     repository: dbrepo/ui
     tag: "latest"
     pullPolicy: IfNotPresent
-  api: "https://dbrepo2.ec.tuwien.ac.at"
+  api: "https://dbrepo2.ec.tuwien.ac.at/api"
   gateway: "https://dbrepo2.ec.tuwien.ac.at"
 
 imagePullSecrets: []
