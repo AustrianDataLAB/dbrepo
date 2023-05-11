@@ -55,15 +55,14 @@ ingress:
     nginx.ingress.kubernetes.io/auth-url: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/auth
   hosts:
     - host: dbrepo.caas-0012.dev.austrianopencloudcommunity.org
-      http:
-        paths:
-          - backend:
-              service:
-                name: dbrepo
-                port:
-                  number: 3000
-            path: /
-            pathType: Prefix
+      paths:
+        - path: /
+          pathType: Prefix
+      backend:
+        service:
+          name: dbrepo
+          port:
+            number: 3000
   tls:
     - hosts:
         - dbrepo.caas-0012.dev.austrianopencloudcommunity.org
