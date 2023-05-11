@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  dbrepo:
+  - apiVersion: v2
+    appVersion: 1.2.0
+    created: "2023-05-11T12:36:24.605660133Z"
+    description: Helm chart for DBRepo
+    digest: c2a08b2a74b3e59108194fd5bc21bc59d989469abf175ed409a3f8f48acec436
+    name: dbrepo
+    type: application
+    urls:
+    - https://github.com/AustrianDataLAB/dbrepo/releases/download/dbrepo-0.1.0/dbrepo-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-05-11T12:36:24.605667233Z"
