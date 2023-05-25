@@ -30,3 +30,6 @@ install_release:
 	helm repo add ${APP_NAME} ${HELM_REPO_release}
 	helm repo update
 	helm upgrade --install ${APP_NAME} -n ${APP_NS} ${APP_NS}/${APP_NAME} --create-namespace --cleanup-on-fail
+
+values:
+	helm upgrade --install ${APP_NAME} -n ${APP_NS} ${APP_NS}/${APP_NAME} --create-namespace --cleanup-on-fail --values charts/dbrepo/values.yaml
