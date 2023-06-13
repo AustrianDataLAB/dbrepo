@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - helm/ui-test
   workflow_dispatch:
     inputs:
       branch:
@@ -54,4 +55,7 @@ jobs:
       - name: publish chart to gcr
         if: steps.changed-files-specific.outputs.any_modified == 'true'
         run: |
+          CHART_VERSION=$(grep 'version:' ./charts/dbrepo/Chart.yaml | tail -n1 | awk '{ print $2}')
           helm chart push ${{ env.GCR_IMAGE }}:${{ github.sha }}
+          helm chart push ${{ env.GCR_IMAGE }}:latest
+          helm chart push ${{ env.GCR_IMAGE }}:${CHART_VERSION}
