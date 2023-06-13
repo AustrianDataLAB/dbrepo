@@ -51,11 +51,12 @@ jobs:
       - name: save helm chart to local registry
         if: steps.changed-files-specific.outputs.any_modified == 'true'
         run: |
-          helm chart save ${{ github.workspace }}/charts/dbrepo ${{ env.GCR_IMAGE }}:${{ github.sha }}
+          CHART_VERSION=$(grep 'version:' ./charts/dbrepo/Chart.yaml | tail -n1 | awk '{ print $2}')
+          helm chart save ${{ github.workspace }}/charts/dbrepo ${{ env.GCR_IMAGE }}:latest
+          helm chart save ${{ github.workspace }}/charts/dbrepo ${{ env.GCR_IMAGE }}:${CHART_VERSION}
       - name: publish chart to gcr
         if: steps.changed-files-specific.outputs.any_modified == 'true'
         run: |
           CHART_VERSION=$(grep 'version:' ./charts/dbrepo/Chart.yaml | tail -n1 | awk '{ print $2}')
-          helm chart push ${{ env.GCR_IMAGE }}:${{ github.sha }}
           helm chart push ${{ env.GCR_IMAGE }}:latest
           helm chart push ${{ env.GCR_IMAGE }}:${CHART_VERSION}
