@@ -25,16 +25,26 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
           
+      - name: Get specific changed files                  # To check if any files changed in charts/pacman-rancher directory
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v14.5
+        with:
+          since_last_remote_commit: true
+          files: |
+            charts/Chart.yaml
           
       - name: Configure Git
+        if: steps.changed-files-specific.outputs.any_modified == 'true'
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - name: Install Helm
+        if: steps.changed-files-specific.outputs.any_modified == 'true'
         uses: azure/setup-helm@v3
 
 
       - name: Run chart-releaser
+        if: steps.changed-files-specific.outputs.any_modified == 'true'
         uses: helm/chart-releaser-action@v1.5.0
         with:
           charts_dir: charts
