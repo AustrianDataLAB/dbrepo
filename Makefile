@@ -1,5 +1,5 @@
-HELM_REPO=ghcr.io/austriandatalab/dbrepo # oci://
-HELM_REPO_release=https://austriandatalab.github.io/dbrepo
+HELM_REPO=ghcr.io/austriandatalab/dbrepo
+HELM_REPO_RELEASE=https://austriandatalab.github.io/dbrepo
 APP_NAME=dbrepo
 APP_NS=dbrepo
 GITHUB_USERNAME=
@@ -24,10 +24,10 @@ deploy: build
 	helm push ./build/dbrepo-*.tgz oci://${HELM_REPO}/dbrepo-helm
 
 install:
-	helm upgrade --install ${APP_NAME} -n ${APP_NS} oci://${HELM_REPO}/dbrepo --create-namespace --cleanup-on-fail
+	helm upgrade --install ${APP_NAME} -n ${APP_NS} oci://${HELM_REPO}/dbrepo-helm --create-namespace --cleanup-on-fail
 
 install_release:
-	helm repo add ${APP_NAME} ${HELM_REPO_release}
+	helm repo add ${APP_NAME} ${HELM_REPO_RELEASE}
 	helm repo update
 	helm upgrade --install ${APP_NAME} -n ${APP_NS} ${APP_NS}/${APP_NAME} --create-namespace --cleanup-on-fail
 
