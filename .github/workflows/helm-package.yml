@@ -34,7 +34,7 @@ jobs:
         with:
           since_last_remote_commit: true
           files: |
-            charts/Chart.yaml
+            charts/dbrepo/Chart.yaml
       
       - name: install helm
         if: steps.changed-files-specific.outputs.any_modified == 'true'
