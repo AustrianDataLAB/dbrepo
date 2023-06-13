@@ -1,0 +1,94 @@
+# Default values for kubernetes.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+ui:
+  image:
+    # repository: ghcr.io/mah-luke/ui
+    # Overrides the image tag whose default is the chart appVersion.
+    # tag: "kubernetes"
+    repository: dbrepo/ui
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  api: "https://dbrepo2.ec.tuwien.ac.at"
+  gateway: "https://dbrepo2.ec.tuwien.ac.at"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext:
+  runAsUser: 1000
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: true 
+  className: "nginx"
+  annotations: 
+    cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+    nginx.ingress.kubernetes.io/auth-signin: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/start?rd=https://$host$request_uri
+    nginx.ingress.kubernetes.io/auth-url: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/auth
+  hosts:
+    - host: dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      paths:
+        - path: /
+          pathType: Prefix
+      backend:
+        service:
+          name: dbrepo
+          port:
+            number: 3000
+  tls:
+    - hosts:
+        - dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      secretName: dbrepo-ingress-tls-cert
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
