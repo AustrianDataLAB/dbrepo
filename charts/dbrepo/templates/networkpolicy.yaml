@@ -1,0 +1,16 @@
+{{- range .Values.networkPolicies }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .networkName }}
+spec:
+  podSelector:
+    matchLabels:
+      network: {{ .networkName }}
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              network: {{ .networkName }}
+{{- end }}
