@@ -1,94 +1,108 @@
-# Default values for kubernetes.
+# Default values for dbrepo.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+namespace: test
 
-ui:
-  image:
-    # repository: ghcr.io/mah-luke/ui
-    # Overrides the image tag whose default is the chart appVersion.
-    # tag: "kubernetes"
-    repository: dbrepo/ui
-    tag: "latest"
-    pullPolicy: IfNotPresent
-  api: "https://dbrepo2.ec.tuwien.ac.at"
-  gateway: "https://dbrepo2.ec.tuwien.ac.at"
+networkPolicies:
+  - networkName: public
+  - networkName: userdb
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+deployments:
+  - name: ui
+    replicaCount: 1
+    servicePort: 3000
+    image: dbrepo/ui
+    env: 
+      - name: API
+        value: https://dbrepo1.ec.tuwien.ac.at:9095
+    createPVC: true
+    persistenceSize: 100Mi
+  - name: metadata-service
+    replicaCount: 1
+    servicePort: 9099
+    image: dbrepo/metadata-service
+    env:
+      - name: SPRING_PROFILES_ACTIVE
+        value: docker
+    createPVC: false
+  - name: metadata-db
+    replicaCount: 1
+    servicePort: 5432
+    image: dbrepo/metadata-db
+    env:
+      - name: SPRING_PROFILES_ACTIVE
+        value: docker
+    createPVC: true
+    mountPath: /var/lib/postgresql/data
+    persistenceSize: 100Mi
+  - name: authentication
+    replicaCount: 1
+    servicePort: 9097
+    image: jtaha/k8s-authentication-service
+    createPVC: false
+  - name: broker
+    replicaCount: 1
+    servicePort: 5672
+    image: jtaha/k8s-broker-service
+    env:
+      - name: BROKER_CONSUMERS
+        value: "3"
+      - name: BROKER_PASSWORD
+        value: pass
+      - name: BROKER_USERNAME
+        value: user
+    createPVC: true
+    mountPath: /var/lib/rabbitmq
+    persistenceSize: 100Mi
+  - name: discovery
+    replicaCount: 1
+    servicePort: 9090
+    image: jtaha/k8s-discovery-service
+    createPVC: false
+  - name: gateway
+    replicaCount: 1
+    servicePort: 9095
+    image: jtaha/k8s-gateway-service
+    createPVC: false
 
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext:
-  runAsUser: 1000
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-service:
-  type: ClusterIP
-  port: 3000
+services:
+  - name: ui
+    ports: 
+      - port: 3000
+  - name: metadata-service
+    ports: 
+      - port: 9099
+  - name: metadata-db 
+    ports: 
+      - port: 5432
+  - name: authentication
+    ports: 
+      - port: 9097
+  - name: broker
+    ports:
+      - port: 5672
+      - port: 15672
+  - name: discovery
+    ports:
+      - port: 9090
+  - name: gateway
+    ports:
+      - port: 9095
 
 ingress:
-  enabled: true 
-  className: "nginx"
-  annotations: 
-    cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-    nginx.ingress.kubernetes.io/auth-signin: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/start?rd=https://$host$request_uri
-    nginx.ingress.kubernetes.io/auth-url: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/auth
+  enabled: true
+  name: ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
   hosts:
-    - host: dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+    - host: dbrepo1.ec.tuwien.ac.at
       paths:
         - path: /
           pathType: Prefix
-      backend:
-        service:
-          name: dbrepo
-          port:
-            number: 3000
-  tls:
-    - hosts:
-        - dbrepo.caas-0012.dev.austrianopencloudcommunity.org
-      secretName: dbrepo-ingress-tls-cert
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
+          serviceName: ui
+          portNumber: 3000
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
