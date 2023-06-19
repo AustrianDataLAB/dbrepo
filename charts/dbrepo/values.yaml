@@ -2,107 +2,364 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-namespace: test
+namespace: dbrepo
 
 networkPolicies:
   - networkName: public
-  - networkName: userdb
+
+dbrepo:
+  host: dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+  ingress:
+    url: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
 
 deployments:
-  - name: ui
-    replicaCount: 1
-    servicePort: 3000
-    image: dbrepo/ui
-    env: 
-      - name: API
-        value: https://dbrepo1.ec.tuwien.ac.at:9095
-    createPVC: true
-    persistenceSize: 100Mi
-  - name: metadata-service
-    replicaCount: 1
-    servicePort: 9099
-    image: dbrepo/metadata-service
-    env:
-      - name: SPRING_PROFILES_ACTIVE
-        value: docker
-    createPVC: false
-  - name: metadata-db
-    replicaCount: 1
-    servicePort: 5432
-    image: dbrepo/metadata-db
-    env:
-      - name: SPRING_PROFILES_ACTIVE
-        value: docker
-    createPVC: true
-    mountPath: /var/lib/postgresql/data
-    persistenceSize: 100Mi
   - name: authentication
     replicaCount: 1
-    servicePort: 9097
-    image: jtaha/k8s-authentication-service
+    servicePort: 443
+    image: dbrepo/authentication-service
     createPVC: false
-  - name: broker
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: broker-service
     replicaCount: 1
     servicePort: 5672
-    image: jtaha/k8s-broker-service
+    image: dbrepo/broker-service
     env:
       - name: BROKER_CONSUMERS
         value: "3"
       - name: BROKER_PASSWORD
-        value: pass
+        value: fda
       - name: BROKER_USERNAME
-        value: user
+        value: fda
     createPVC: true
     mountPath: /var/lib/rabbitmq
     persistenceSize: 100Mi
-  - name: discovery
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: container
     replicaCount: 1
-    servicePort: 9090
-    image: jtaha/k8s-discovery-service
+    servicePort: 80
+    image: dbrepo/container-service
+    env:
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
     createPVC: false
-  - name: gateway
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: database
     replicaCount: 1
-    servicePort: 9095
-    image: jtaha/k8s-gateway-service
+    servicePort: 80
+    image: dbrepo/database-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: ingress.dbrepo.svc.cluster.local
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
     createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: identifier
+    replicaCount: 1
+    servicePort: 80
+    image: dbrepo/database-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: ingress.dbrepo.svc.cluster.local
+      - name: WEBSITE
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: metadata
+    replicaCount: 1
+    servicePort: 80
+    image: dbrepo/metadata-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: ingress.dbrepo.svc.cluster.local
+      - name: BASE_URL
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      - name: PID_BASE
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org/pid/
+      - name: REPOSITORY_NAME
+        value: DBRepo
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: metadata-db
+    replicaCount: 1
+    servicePort: 3306
+    image: dbrepo/metadata-db
+    createPVC: true
+    mountPath: /var/lib/mysql
+    persistenceSize: 100Mi
+  - name: query
+    replicaCount: 1
+    servicePort: 80
+    image: dbrepo/query-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: ingress.dbrepo.svc.cluster.local
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: search-db
+    replicaCount: 1
+    servicePort: 9200
+    image: opensearchproject/opensearch:2
+
+      # discovery.type: "single-node"
+      # ES_JAVA_OPTS: "-Xms4g -Xmx4g"
+      # logger.level: "WARN"
+      # plugins.security.disabled: "true"
+      # bootstrap.memory_lock: "true"
+    env:
+      - name: discovery.type
+        value: "single-node"
+      - name: ES_JAVA_OPTS
+        value: "-Xms4g -Xmx4g"
+      - name: logger.level
+        value: "WARN"
+      - name: plugins.security.disabled
+        value: "true"
+      - name: bootstrap.memory_lock
+        value: "true"
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: true
+    mountPath: /var/lib/mysql
+    persistenceSize: 100Mi
+  - name: semantics
+    replicaCount: 1
+    servicePort: 80
+    image: dbrepo/semantics-service
+    env:
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: table
+    replicaCount: 1
+    servicePort: 80
+    image: dbrepo/table-service
+    env:
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: ui
+    replicaCount: 1
+    servicePort: 80
+    image: dbrepo/ui
+    env: 
+      - name: API
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: user-db
+    replicaCount: 1
+    servicePort: 3306
+    image: bitnami/mariadb:10.5
+    env:
+      - name: MARIADB_ROOT_PASSWORD
+        value: dbrepo
+    createPVC: true
+    mountPath: /var/lib/mysql
+    persistenceSize: 100Mi
+  - name: user
+    replicaCount: 1
+    servicePort: 80
+    image: dbrepo/user-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: ingress.dbrepo.svc.cluster.local
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
 
 services:
-  - name: ui
-    ports: 
-      - port: 3000
-  - name: metadata-service
-    ports: 
-      - port: 9099
-  - name: metadata-db 
-    ports: 
-      - port: 5432
   - name: authentication
     ports: 
-      - port: 9097
-  - name: broker
+      - port: 80
+        target: 8080
+      - port: 443
+        target: 8443
+  - name: broker-service
     ports:
       - port: 5672
       - port: 15672
-  - name: discovery
+  - name: container
+    ports: 
+      - port: 80
+        target: 9091
+  - name: database
+    ports: 
+      - port: 80
+        target: 9092
+  - name: identifier
+    ports: 
+      - port: 80
+        target: 9096
+  - name: metadata
+    ports: 
+      - port: 80
+        target: 9099
+  - name: metadata-db 
     ports:
-      - port: 9090
-  - name: gateway
+      - port: 3306
+      - port: 9100
+  - name: query
+    ports: 
+      - port: 80
+        target: 9093
+  - name: search-db
+    ports: 
+      - port: 9200
+  - name: semantics
+    ports: 
+      - port: 80
+        target: 9097
+  - name: table
+    ports: 
+      - port: 80
+        target: 9094
+  - name: ui
+    ports: 
+      - port: 80
+        target: 3000
+  - name: user
+    ports: 
+      - port: 80
+        target: 9098
+  - name: user-db 
     ports:
-      - port: 9095
+      - port: 3306
+      - port: 9100
 
 ingress:
   enabled: true
   name: ingress
   annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+    nginx.ingress.kubernetes.io/auth-signin: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/start?rd=https://$host$request_uri
+    nginx.ingress.kubernetes.io/auth-url: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/auth
   hosts:
-    - host: dbrepo1.ec.tuwien.ac.at
+    - host: dbrepo.caas-0012.dev.austrianopencloudcommunity.org
       paths:
+        - path: /api/auth
+          pathType: Prefix
+          serviceName: authentication
+          portNumber: 80
+        - path: /api/(user)|(maintenance)
+          pathType: Prefix
+          serviceName: user
+          portNumber: 80
+        - path: /api/broker
+          pathType: Prefix
+          serviceName: broker-service
+          portNumber: 80
+        # - path: /api/analyse
+        #   pathType: Prefix
+        #   serviceName: analyse
+        #   portNumber: 80
+        - path: /api/oai
+          pathType: Prefix
+          serviceName: metadata
+          portNumber: 80
+        - path: /api/identifier
+          pathType: Prefix
+          serviceName: identifier
+          portNumber: 80
+        - path: /identifier
+          pathType: Prefix
+          serviceName: identifier
+          portNumber: 80
+        - path: /api/database/[0-9]+/(query)|(view)|(version)
+          pathType: Prefix
+          serviceName: query
+          portNumber: 80
+        - path: /api/database/[0-9]+/table/[0-9]+/(history)|(data)|(query)|(export)|(consumer)
+          pathType: Prefix
+          serviceName: query
+          portNumber: 80
+        - path: /api/database/[0-9]+/table
+          pathType: Prefix
+          serviceName: table
+          portNumber: 80
+        - path: /api/database/[0-9]+
+          pathType: Prefix
+          serviceName: database
+          portNumber: 80
+        - path: /api/(container)|(image)
+          pathType: Prefix
+          serviceName: container
+          portNumber: 80
+        - path: /api/semantic
+          pathType: Prefix
+          serviceName: semantics
+          portNumber: 80
+        # - path: /retrieve
+        #   pathType: Prefix
+        #   serviceName: search
+        #   portNumber: 80
         - path: /
           pathType: Prefix
           serviceName: ui
-          portNumber: 3000
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+          portNumber: 80
+  tls:
+    - hosts:
+        - dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      secretName: dbrepo-ingress-tls-cert

@@ -20,8 +20,12 @@ spec:
         app: {{ .name }}
         service: {{ .name }}
     spec:
+      securityContext:
+        {{- toYaml .podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .name }}
+          securityContext:
+            {{- toYaml .securityContext | nindent 12 }}
           image: "{{ .image }}"
           ports:
             - name: http

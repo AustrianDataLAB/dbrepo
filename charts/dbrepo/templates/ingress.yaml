@@ -14,8 +14,8 @@ spec:
   {{- range .Values.ingress.hosts }}
   - host: {{ .host | quote }}
     http:
-      {{- range .paths }}
       paths:
+      {{- range .paths }}
       - path: {{ .path }}
         pathType: {{ .pathType }}
         backend:
