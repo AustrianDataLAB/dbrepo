@@ -1,17 +1,28 @@
-{{- if .Values.ingress.enabled -}}
+{{- range .Values.ingress }}
+{{- if .enabled }}
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Values.ingress.name }}
-  {{- with .Values.ingress.annotations }}
+  name: {{ .name }}
+  {{- with .annotations }}
   annotations:
       {{- toYaml . | nindent 4 }}
   {{- end }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ $.Values.namespace }}
 spec:
-
+  {{- if .tls }}
+  tls:
+    {{- range .tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
   rules:
-  {{- range .Values.ingress.hosts }}
+  {{- range .hosts }}
   - host: {{ .host | quote }}
     http:
       paths:
@@ -25,4 +36,5 @@ spec:
               number: {{ .portNumber }}
       {{- end}}
   {{- end}}
+{{- end}}
 {{- end}}

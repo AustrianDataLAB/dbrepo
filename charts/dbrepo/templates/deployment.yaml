@@ -28,9 +28,10 @@ spec:
             {{- toYaml .securityContext | nindent 12 }}
           image: "{{ .image }}"
           ports:
-            - name: http
-              containerPort: {{ .servicePort }}
-              protocol: TCP
+            {{- range .ports }}
+            - containerPort: {{ .containerPort }}
+              protocol: {{ default "TCP" .protocol }}
+            {{- end }}
           env:
             {{- toYaml .env | nindent 12 }}
           volumeMounts:
@@ -38,10 +39,25 @@ spec:
             - name: volume
               mountPath: {{ default "/tmp" .mountPath }}
           {{- end }}
+          {{- if .configMapVolume }}
+          {{- with .configMapVolume }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              subPath: {{ .subPath }}
+          {{- end }}
+          {{- end }}
       volumes:
       {{- if .createPVC }}
         - name: volume
           persistentVolumeClaim:
             claimName: {{ .name }}-claim
+      {{- end }}
+      {{- if .configMapVolume }}
+      {{- with .configMapVolume }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .name }}
+
+      {{- end }}
       {{- end }}
 {{- end }}
