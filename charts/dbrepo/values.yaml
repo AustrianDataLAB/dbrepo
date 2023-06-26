@@ -72,8 +72,6 @@ deployments:
         value: admin
       - name: SEARCH_PASSWORD
         value: admin
-      # - name: JWT_ISSUER
-      #   value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org/realms/dbrepo
     createPVC: false
     podSecurityContext:
       fsGroup: 1000
@@ -309,8 +307,7 @@ ingress:
     name: ingress
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-      nginx.ingress.kubernetes.io/auth-signin: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/start?rd=https://$host$request_uri
-      nginx.ingress.kubernetes.io/auth-url: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org/api/auth
+      nginx.ingress.kubernetes.io/whitelist-source-range: 128.130.0.0/15
       nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
       - host: dbrepo.caas-0012.dev.austrianopencloudcommunity.org
@@ -367,8 +364,7 @@ ingress:
     name: ingress-broker
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-      nginx.ingress.kubernetes.io/auth-signin: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/start?rd=https://$host$request_uri
-      nginx.ingress.kubernetes.io/auth-url: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/auth
+      nginx.ingress.kubernetes.io/whitelist-source-range: 128.130.0.0/15
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /api/$1
     hosts:
@@ -386,8 +382,7 @@ ingress:
     name: ingress-rewrite
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-      nginx.ingress.kubernetes.io/auth-signin: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/start?rd=https://$host$request_uri
-      nginx.ingress.kubernetes.io/auth-url: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/auth
+      nginx.ingress.kubernetes.io/whitelist-source-range: 128.130.0.0/15
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /$1
     hosts:
