@@ -1,68 +1,63 @@
+{{- range .Values.deployments }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "kubernetes.fullname" . }}
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
   labels:
-    {{- include "kubernetes.labels" . | nindent 4 }}
+    app: {{ .name }}
+    service: {{ .name }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  replicas: {{ .replicaCount }}
   selector:
     matchLabels:
-      {{- include "kubernetes.selectorLabels" . | nindent 6 }}
+      app: {{ .name }}
+      service: {{ .name }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        {{- include "kubernetes.selectorLabels" . | nindent 8 }}
+        app: {{ .name }}
+        service: {{ .name }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "kubernetes.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml .podSecurityContext | nindent 8 }}
       containers:
-        - name: dbrepo-ui
+        - name: {{ .name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
-          env:
-            - name: API
-              value: {{ .Values.ui.api }}
-            - name: GATEWAY_ENDPOINT
-              value: {{ .Values.ui.gateway }}
-            - name: NODE_ENV # TODO: Remove this once we have a production build
-              value: "development"
+            {{- toYaml .securityContext | nindent 12 }}
+          image: "{{ .image }}"
           ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
+            {{- range .ports }}
+            - containerPort: {{ .containerPort }}
+              protocol: {{ default "TCP" .protocol }}
+            {{- end }}
+          env:
+            {{- toYaml .env | nindent 12 }}
+          volumeMounts:
+          {{- if .createPVC }}
+            - name: volume
+              mountPath: {{ default "/tmp" .mountPath }}
+          {{- end }}
+          {{- if .configMapVolume }}
+          {{- with .configMapVolume }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              subPath: {{ .subPath }}
+          {{- end }}
+          {{- end }}
+      volumes:
+      {{- if .createPVC }}
+        - name: volume
+          persistentVolumeClaim:
+            claimName: {{ .name }}-claim
       {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
+      {{- if .configMapVolume }}
+      {{- with .configMapVolume }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .name }}
+
       {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

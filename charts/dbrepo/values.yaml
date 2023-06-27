@@ -1,94 +1,402 @@
-# Default values for kubernetes.
+# Default values for dbrepo.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+namespace: dbrepo
 
-ui:
-  image:
-    # repository: ghcr.io/mah-luke/ui
-    # Overrides the image tag whose default is the chart appVersion.
-    # tag: "kubernetes"
-    repository: dbrepo/ui
-    tag: "latest"
-    pullPolicy: IfNotPresent
-  api: "https://dbrepo2.ec.tuwien.ac.at"
-  gateway: "https://dbrepo2.ec.tuwien.ac.at"
+networkPolicies:
+  - networkName: public
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+configMaps:
+  - name: metadata-db-setup
+    data:
+      setup-schema_userdb.sql: |
+        INSERT INTO `fda`.`mdb_containers` (name, internal_name, image_id, host, port, privileged_username, privileged_password) VALUES ('MariaDB 10.5', 'mariadb_10_5', 1, 'user-db.dbrepo.svc.cluster.local', 3306, 'root', 'dbrepo');
 
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
+deployments:
+  - name: authentication
+    replicaCount: 1
+    ports:
+      - containerPort: 8080
+      - containerPort: 8443
+    image: dbrepo/authentication-service
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: broker-service
+    replicaCount: 1
+    ports:
+      - containerPort: 5672
+      - containerPort: 15672
+    image: dbrepo/broker-service
+    env:
+      - name: BROKER_CONSUMERS
+        value: "3"
+      - name: BROKER_USERNAME
+        value: fda
+      - name: BROKER_PASSWORD
+        value: fda
+    createPVC: true
+    mountPath: /var/lib/rabbitmq
+    persistenceSize: 100Mi
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: container
+    replicaCount: 1
+    image: dbrepo/container-service
+    env:
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: database
+    replicaCount: 1
+    image: dbrepo/database-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      - name: BROKER_USERNAME
+        value: fda
+      - name: BROKER_PASSWORD
+        value: fda
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: identifier
+    replicaCount: 1
+    image: dbrepo/database-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      - name: WEBSITE
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: metadata
+    replicaCount: 1
+    image: dbrepo/metadata-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      - name: BROKER_USERNAME
+        value: fda
+      - name: BROKER_PASSWORD
+        value: fda
+      - name: BASE_URL
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      - name: PID_BASE
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org/pid/
+      - name: REPOSITORY_NAME
+        value: DBRepo
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: metadata-db
+    replicaCount: 1
+    ports:
+      - containerPort: 3306
+      - containerPort: 9100
+    image: dbrepo/metadata-db
+    createPVC: true
+    mountPath: /var/lib/mysql
+    persistenceSize: 100Mi
+    configMapVolume:
+      name: metadata-db-setup
+      mountPath: /docker-entrypoint-initdb.d/setup-schema_userdb.sql
+      subPath: setup-schema_userdb.sql
+  - name: query
+    replicaCount: 1
+    image: dbrepo/query-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: search-db
+    replicaCount: 1
+    ports:
+      - containerPort: 9200
+    image: opensearchproject/opensearch:2
+    env:
+      - name: discovery.type
+        value: "single-node"
+      - name: ES_JAVA_OPTS
+        value: "-Xms4g -Xmx4g"
+      - name: logger.level
+        value: "WARN"
+      - name: plugins.security.disabled
+        value: "true"
+      - name: bootstrap.memory_lock
+        value: "true"
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: true
+    mountPath: /var/lib/mysql
+    persistenceSize: 100Mi
+  - name: semantics
+    replicaCount: 1
+    image: dbrepo/semantics-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      - name: BROKER_USERNAME
+        value: fda
+      - name: BROKER_PASSWORD
+        value: fda
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: table
+    replicaCount: 1
+    image: dbrepo/table-service
+    env:
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: ui
+    replicaCount: 1
+    image: dbrepo/ui
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  - name: user-db
+    replicaCount: 1
+    ports:
+      - containerPort: 3306
+      - containerPort: 9100
+    image: bitnami/mariadb:10.5
+    env:
+      - name: MARIADB_ROOT_PASSWORD
+        value: dbrepo
+    createPVC: true
+    mountPath: /var/lib/mysql
+    persistenceSize: 100Mi
+  - name: user
+    replicaCount: 1
+    image: dbrepo/user-service
+    env:
+      - name: GATEWAY_ENDPOINT
+        value: https://dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+      - name: BROKER_USERNAME
+        value: fda
+      - name: BROKER_PASSWORD
+        value: fda
+      - name: SEARCH_USERNAME
+        value: admin
+      - name: SEARCH_PASSWORD
+        value: admin
+    createPVC: false
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
 
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext:
-  runAsUser: 1000
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-service:
-  type: ClusterIP
-  port: 3000
+services:
+  - name: authentication
+    ports: 
+      - port: 80
+        target: 8080
+  - name: broker-service
+    ports:
+      - port: 5672
+      - port: 15672
+  - name: container
+    ports: 
+      - port: 80
+        target: 9091
+  - name: database
+    ports: 
+      - port: 80
+        target: 9092
+  - name: identifier
+    ports: 
+      - port: 80
+        target: 9096
+  - name: metadata
+    ports: 
+      - port: 80
+        target: 9099
+  - name: metadata-db 
+    ports:
+      - port: 3306
+      - port: 9100
+  - name: query
+    ports: 
+      - port: 80
+        target: 9093
+  - name: search-db
+    ports: 
+      - port: 9200
+        target: 9200
+  - name: semantics
+    ports: 
+      - port: 80
+        target: 9097
+  - name: table
+    ports: 
+      - port: 80
+        target: 9094
+  - name: ui
+    ports: 
+      - port: 80
+        target: 3000
+  - name: user
+    ports: 
+      - port: 80
+        target: 9098
+  - name: user-db 
+    ports:
+      - port: 3306
+        target: 3306
+      - port: 9100
+        target: 9100
 
 ingress:
-  enabled: true 
-  className: "nginx"
-  annotations: 
-    cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-    nginx.ingress.kubernetes.io/auth-signin: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/start?rd=https://$host$request_uri
-    nginx.ingress.kubernetes.io/auth-url: https://oauth.caas-0012.dev.austrianopencloudcommunity.org/oauth2/auth
-  hosts:
-    - host: dbrepo.caas-0012.dev.austrianopencloudcommunity.org
-      paths:
-        - path: /
-          pathType: Prefix
-      backend:
-        service:
-          name: dbrepo
-          port:
-            number: 3000
-  tls:
-    - hosts:
-        - dbrepo.caas-0012.dev.austrianopencloudcommunity.org
-      secretName: dbrepo-ingress-tls-cert
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
+  - enabled: true
+    name: ingress
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/whitelist-source-range: 128.130.0.0/15
+      nginx.ingress.kubernetes.io/use-regex: "true"
+    hosts:
+      - host: dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+        paths:
+          - path: /
+            pathType: Prefix
+            serviceName: ui
+            portNumber: 80
+          # - path: /api/analyse
+          #   pathType: Prefix
+          #   serviceName: analyse
+          #   portNumber: 80
+          - path: /api/(user|maintenance)
+            pathType: Prefix
+            serviceName: user
+            portNumber: 80
+          - path: /api/(container|image)
+            pathType: Prefix
+            serviceName: container
+            portNumber: 80
+          - path: /api/database
+            pathType: Prefix
+            serviceName: database
+            portNumber: 80
+          - path: /api/database/[0-9]+/table
+            pathType: Prefix
+            serviceName: table
+            portNumber: 80
+          - path: /api/database/[0-9]+/(query|view|version)
+            pathType: Prefix
+            serviceName: query
+            portNumber: 80
+          - path: /api/database/[0-9]+/table/[0-9]+/(history|data|query|export|consumer)
+            pathType: Prefix
+            serviceName: query
+            portNumber: 80
+          - path: /api/(identifier|pid)
+            pathType: Prefix
+            serviceName: identifier
+            portNumber: 80
+          - path: /api/oai
+            pathType: Prefix
+            serviceName: metadata
+            portNumber: 80
+          - path: /api/semantic
+            pathType: Prefix
+            serviceName: semantics
+            portNumber: 80
+    tls:
+      - hosts:
+          - dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+        secretName: dbrepo-ingress-tls-cert
+  - enabled: true
+    name: ingress-broker
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/whitelist-source-range: 128.130.0.0/15
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /api/$1
+    hosts:
+      - host: dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+        paths:
+          - path: /api/broker/(.*)
+            pathType: Prefix
+            serviceName: broker-service
+            portNumber: 15672
+    tls:
+      - hosts:
+          - dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+        secretName: dbrepo-ingress-tls-cert
+  - enabled: true
+    name: ingress-rewrite
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/whitelist-source-range: 128.130.0.0/15
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$1
+    hosts:
+      - host: dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+        paths:
+          - path: /api/auth/(.*)
+            pathType: Prefix
+            serviceName: authentication
+            portNumber: 80
+          - path: /retrieve/(.*)
+            pathType: Prefix
+            serviceName: search
+            portNumber: 80
+    tls:
+      - hosts:
+          - dbrepo.caas-0012.dev.austrianopencloudcommunity.org
+        secretName: dbrepo-ingress-tls-cert

@@ -5,7 +5,7 @@ APP_NS=dbrepo
 GITHUB_USERNAME=
 
 
-.PHONY: all
+.PHONY: all build
 
 all: clean build deploy install
 
