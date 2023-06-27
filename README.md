@@ -10,13 +10,11 @@ Coursework startup
 * [Value Proposition](https://colab.tuwien.ac.at/display/ADLS/DBRepo+-+Database+Repository)
 * [Wiki](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/wikis/home)
 
-## Git Branching
+## tl;dr Statement
 
-We move all branches two levels lower for this coursework:
+Digital repositories see themselves more frequently encountered with the problem of making databases accessible in their collection. Challenges revolve around organizing, searching and retrieving content stored within databases and constitute a major technical burden as their internal representation greatly differs from static documents most digital repositories are designed for. 
 
-* `master` -> `kubernetes-integration`
-* `dev` -> `kubernetes-integration-dev`
-* `feature-xyz` -> `kubernetes-integration-feature-xyz`
+We present a database repository system that allows researchers to ingest data into a central, versioned repository through common interfaces, provides efficient access to arbitrary subsets of data even when the underlying data store is evolving, allows reproducing of query results and supports findable-, accessible-, interoperable- and reusable data.
 
 ## Required Cloud Resources
 
@@ -27,7 +25,7 @@ We move all branches two levels lower for this coursework:
 
 ## Contributors
 
-- Martin Weise (CEO)
-- Tobias Grantner (COO)
-- Lukas Mahler (CIO)
-- Josef Taha (CTO)
+- [Martin Weise](https://orcid.org/0000-0003-4216-302X) (CEO)
+- [Tobias Grantner](https://orcid.org/0000-0001-5104-5004) (COO)
+- [Lukas Mahler](https://orcid.org/0000-0002-8985-8139) (CIO)
+- [Josef Taha](https://orcid.org/0000-0002-4523-1369) (CTO)
